@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Streamlit
+.streamlit/
+
+# IDE
+.vscode/
+.idea/
+
+# Build artifacts
+build/
+dist/
+
+# Local satellite data (do not commit large files)
+*.tif
+*.tiff
+*.jp2
+*.bsq
+*.bil
+*.bip
+*.hdr
+*.img
+*.dat
+*.xml
+*.SAFE/
+*.zip
