@@ -27,20 +27,16 @@ def file_signature(path: str | Path) -> tuple[str, int, int]:
     return str(p), int(stat.st_size), int(stat.st_mtime_ns)
 
 def directory_signature(root: str | Path) -> tuple[str, int, int]:
+    """Cheap cache signature.
+
+    Directory mtime changes when direct children are added/removed/renamed.
+    This avoids recursively stat'ing every product file on each Streamlit rerun.
+    Use the manual cache-clear control if deeply nested files are modified in place.
+    """
     root = normalize_path(root)
-    newest = 0
-    count = 0
-    if root.is_file():
-        stat = root.stat()
-        return str(root), 1, int(stat.st_mtime_ns)
-    for p in root.rglob("*"):
-        if p.is_file() and p.suffix.lower() in (RASTER_EXTENSIONS | SAFE_AUX_EXTENSIONS):
-            count += 1
-            try:
-                newest = max(newest, int(p.stat().st_mtime_ns))
-            except OSError:
-                pass
-    return str(root), count, newest
+    stat = root.stat()
+    kind = 1 if root.is_file() else 0
+    return str(root), kind, int(stat.st_mtime_ns)
 
 def safe_extract_zip(zip_path: Path, destination: Path, max_uncompressed_bytes: int = MAX_ARCHIVE_UNCOMPRESSED_BYTES):
     destination = destination.resolve()
