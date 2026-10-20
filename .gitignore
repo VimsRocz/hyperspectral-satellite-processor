@@ -9,3 +9,7 @@ __pycache__/
 *.tif
 *.tiff
 *.jp2
+data/
+datasets/
+temp/
+.pytest_cache/
