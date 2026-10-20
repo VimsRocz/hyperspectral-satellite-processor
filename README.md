@@ -1,156 +1,243 @@
 # Hyperspectral Satellite Processor
 
-Short description:
-A local web-based hyperspectral and multispectral satellite image processing application built with Python, Streamlit, Rasterio, NumPy, Matplotlib and scikit-learn.
+A local, browser-based Python application for inspecting, visualizing, and exploring hyperspectral and multispectral Earth-observation imagery.
 
-All processing runs locally on your machine (no required cloud processing service).
+The processing runs on the user's own computer. Large satellite products can be opened directly from a local folder without uploading them to a cloud service.
 
-## Overview
+## What the tool does
 
-Hyperspectral Satellite Processor is intended for exploratory Earth-observation workflows, including:
+The application provides a sensor-aware workflow for:
 
-- hyperspectral image inspection
-- multispectral satellite imagery exploration
-- metadata inspection
-- individual band visualization
-- spectral signature extraction
+- GeoTIFF, JP2, ENVI BSQ/BIL/BIP raster ingestion
+- EnMAP hyperspectral data
+- Sentinel-2 raster products
+- Landsat 8/9 raster products
+- raster metadata inspection
+- wavelength-aware band browsing
 - RGB and false-color composites
-- PCA
-- normalized-difference spectral indices
-- exploratory Earth-observation analysis
-
-The tool currently supports:
-
-- EnMAP
-- Sentinel-2
-- Landsat 8/9
-- generic GeoTIFF
-- ENVI BSQ
-- ENVI BIL
-- ENVI BIP
-- JP2 where supported by Rasterio/GDAL
-
-## Current Features
-
-- GeoTIFF / TIFF loading
-- JPEG2000 / JP2 loading
-- ENVI BSQ/BIL/BIP + HDR loading
-- multiband raster support
-- EnMAP hyperspectral cube loading
-- wavelength extraction from ENVI headers when available
-- metadata inspection
-- image dimensions
-- CRS
-- raster bounds
-- datatype
-- nodata inspection
-- individual-band viewer
-- percentile contrast stretching
-- RGB / false-color composite generation
-- spectral signature for a selected pixel
-- wavelength-vs-pixel-value plots
+- pixel and ROI spectral profiles
 - PCA visualization
+- generic normalized-difference indices
+- wavelength-aware NDVI, NDWI, NDMI, and red-edge NDVI presets
 - band statistics
-- normalized-difference index calculation
-- local-folder mode for large hyperspectral datasets
-- Streamlit local browser interface
+- downloadable spectral CSV output
 
-## Current EnMAP Support
+The project is intended for exploratory analysis and software development. It is not a replacement for validated mission-specific scientific processing chains.
 
-EnMAP products may contain files such as:
+## Supported sensors and formats
 
-- `SPECTRAL_IMAGE.BSQ`
-- `SPECTRAL_IMAGE.HDR`
-- `METADATA.XML`
-- `QL_PIXELMASK.TIF`
-- `QL_QUALITY_CLOUD.TIF`
-- `QL_QUALITY_CIRRUS.TIF`
-- `QL_QUALITY_HAZE.TIF`
-- `QL_QUALITY_SNOW.TIF`
-- other quicklook and quality-mask files
-
-Interpretation in this tool:
-
-- `SPECTRAL_IMAGE.BSQ` = main hyperspectral science cube
-- `SPECTRAL_IMAGE.HDR` = ENVI header describing dimensions/bands/wavelengths
-- `METADATA.XML` = additional mission/product metadata
-- `QL_*` files = quicklook, mask, or quality information
-
-For very large BSQ files, use **Local folder/path** rather than uploading through the browser.
-
-### EnMAP product levels (brief)
-
-- **L1B**
-  - calibrated sensor product / radiance-oriented processing
-  - VNIR and SWIR may be separate cubes
-- **L1C**
-  - geometrically processed/orthorectified product
-- **L2A**
-  - atmospherically corrected surface-reflectance product
-  - recommended for most spectral analysis, vegetation indices, material analysis, and classification
-
-This software does not claim to perform all mission-specific correction chains automatically.
-
-## Supported Satellite Data
-
-| Mission / Format | Type | Recommended Product | Support |
+| Sensor / Format | Type | Recommended Product | Current Support |
 | --- | --- | --- | --- |
-| EnMAP | Hyperspectral | L2A | Supported / active development |
-| Sentinel-2 | Multispectral | Level-2A | Basic raster support |
-| Landsat 8/9 | Multispectral + Thermal | Collection 2 Level-2 | Basic raster support |
-| Generic ENVI | Hyperspectral / Multiband | BSQ/BIL/BIP + HDR | Supported |
+| EnMAP | Hyperspectral | L2A | Advanced / active development |
+| Sentinel-2 | Multispectral | Level-2A | Basic / developing |
+| Landsat 8/9 | Multispectral + Thermal | Collection 2 Level-2 | Basic / developing |
+| Generic ENVI | Hyperspectral / multiband | BSQ/BIL/BIP + HDR | Supported |
 | Generic GeoTIFF | Raster | GeoTIFF | Supported |
+| JP2 | Raster | Product-dependent | Supported where Rasterio/GDAL supports the file |
 
-## Satellite Data Sources
+## Sensor & Product tab
 
-### EnMAP
+The application now includes a **Sensor & Product** view that explains:
 
-Mission:
-EnMAP hyperspectral Earth-observation mission
+- detected sensor
+- mission name
+- detected product level
+- selected file role
+- data quantity where known
+- recommended product level
+- official mission website
+- official data access link
+- documentation/example-data link
+
+The application also warns when a user selects a quality mask or quicklook instead of a science image.
+
+## EnMAP
+
+Official mission:
+
+https://www.enmap.org/
 
 Official data access:
-<https://www.enmap.org/data_access/>
+
+https://www.enmap.org/data_access/
 
 Example data:
-<https://www.enmap.org/data_tools/exampledata/>
 
-Recommended for first hyperspectral testing: **EnMAP L2A**.
+https://www.enmap.org/data_tools/exampledata/
 
-Typical files:
+Typical EnMAP product files include:
 
 - `SPECTRAL_IMAGE.BSQ`
 - `SPECTRAL_IMAGE.HDR`
+- `SPECTRAL_IMAGE_VNIR.BSQ`
+- `SPECTRAL_IMAGE_SWIR.BSQ`
 - `METADATA.XML`
+- `QL_PIXELMASK*.TIF`
+- `QL_QUALITY_*.TIF`
+- `QL_VNIR.TIF`
+- `QL_SWIR.TIF`
 
-### Sentinel-2
+The software classifies them approximately as:
 
-Mission:
-Copernicus Sentinel-2
+- `SPECTRAL_IMAGE*` → science image
+- `QL_PIXELMASK*` / `QL_QUALITY_*` → quality mask
+- `QL_VNIR` / `QL_SWIR` → quicklook
 
-Data source:
-Copernicus Data Space Browser
+### EnMAP product levels
 
-<https://browser.dataspace.copernicus.eu/>
+**L1B**
+- radiometrically calibrated / radiance-oriented product
+- VNIR and SWIR may be delivered as separate cubes
+- do not interpret it as surface reflectance
 
-Recommended:
-Sentinel-2 Level-2A surface reflectance.
+**L1C**
+- geometrically corrected / orthorectified radiance-oriented product
 
-The tool can currently work with individual raster bands and build RGB / false-color composites.
+**L2A**
+- atmospherically corrected surface-reflectance product
+- recommended in this application for most spectral signatures, vegetation indices, material analysis, and later classification workflows
 
-### Landsat 8/9
+## Sentinel-2
 
-Data source:
-USGS EarthExplorer
+Official mission:
 
-<https://earthexplorer.usgs.gov/>
+https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2
 
-Official Landsat access information:
-<https://www.usgs.gov/landsat-missions/landsat-data-access>
+Copernicus Data Space Browser:
 
-Recommended:
-Landsat Collection 2 Level-2.
+https://browser.dataspace.copernicus.eu/
 
-## Quick Start
+Recommended starting point:
+
+**Sentinel-2 Level-2A**
+
+The application currently supports generic raster/band workflows. Individual Sentinel-2 band files can be used even when the product is not stored as one multiband raster.
+
+## Landsat 8/9
+
+Official mission:
+
+https://www.usgs.gov/landsat-missions
+
+USGS EarthExplorer:
+
+https://earthexplorer.usgs.gov/
+
+Data access information:
+
+https://www.usgs.gov/landsat-missions/landsat-data-access
+
+Recommended starting point:
+
+**Landsat Collection 2 Level-2**
+
+Landsat contains reflectance-oriented optical bands and thermal products. Thermal bands should not be interpreted as reflectance bands.
+
+## Performance architecture
+
+The application is optimized for interactive Streamlit use.
+
+### Cached work
+
+The UI caches deterministic results using `st.cache_data`, including:
+
+- raster discovery
+- raster metadata
+- band labels
+- wavelengths
+- downsampled band previews
+- RGB composites
+- band statistics
+- normalized-difference results
+- PCA results
+
+Cache keys include normalized paths and file/directory signatures so that modified files can invalidate cached results.
+
+### Raster discovery
+
+Science images are prioritized ahead of masks/quicklooks.
+
+The scan filters by supported raster extensions before asking GDAL/Rasterio to open a file.
+
+### PCA
+
+PCA remains a preview operation rather than a full-resolution transform.
+
+The workflow:
+
+1. reads a downsampled float32 cube
+2. finds valid pixels
+3. samples at most a configurable number of pixels for fitting
+4. fits three PCA components
+5. transforms the valid preview in chunks
+6. stretches PC1/PC2/PC3 for visualization
+
+This reduces peak memory compared with fitting every valid pixel.
+
+### RGB and indices
+
+Three bands from the same raster are read in one Rasterio call where practical.
+
+Normalized-difference indices read both requested bands together and operate in float32.
+
+## Automatic wavelength presets
+
+When wavelength metadata is available, the application finds the nearest real band to target wavelengths.
+
+Supported presets include:
+
+- Natural Color
+- Vegetation False Color
+- SWIR False Color
+- NDVI
+- NDWI
+- NDMI
+- Red-edge NDVI
+
+The UI shows both the selected band number and the actual wavelength used.
+
+## Spectral profiles
+
+The Spectrum tab supports:
+
+- a single-pixel spectrum
+- a square ROI mean spectrum using a user-defined pixel radius
+- wavelength-aware x-axis when wavelength metadata exists
+- product-aware y-axis label where the data quantity is known
+- CSV export
+
+## Scientific limitations
+
+This software does **not** silently apply mission-specific:
+
+- radiometric correction
+- atmospheric correction
+- geometric correction
+- orthorectification
+- quality masking
+
+Correct scientific processing depends on factors including:
+
+- sensor
+- product level
+- calibration coefficients
+- acquisition geometry
+- solar geometry
+- atmospheric parameters
+- quality masks
+- spectral response information
+
+Before interpreting a spectrum, verify whether the source product represents:
+
+- raw digital numbers
+- radiance
+- top-of-atmosphere reflectance
+- surface reflectance
+- brightness temperature / thermal science data
+
+The tool deliberately keeps scientific assumptions visible rather than pretending every raster is analysis-ready.
+
+## Quick start
 
 Recommended Python: **3.11 or 3.12**
 
@@ -171,7 +258,7 @@ streamlit run app.py
 
 Open:
 
-<http://localhost:8501>
+http://localhost:8501
 
 ### Windows PowerShell
 
@@ -188,108 +275,28 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Open:
+## Recommended EnMAP workflow
 
-<http://localhost:8501>
+1. Download and extract an EnMAP L2A product.
+2. Start the Streamlit app.
+3. Choose **Local folder/path**.
+4. Paste the complete EnMAP product folder path.
+5. Choose the raster ending in `SPECTRAL_IMAGE.BSQ`.
+6. Open **Sensor & Product** and confirm the detected product.
+7. Open **Dataset Inspector** and verify wavelength metadata.
+8. Use **Band Viewer**.
+9. Create **Natural Color** or another wavelength-based composite.
+10. Plot a pixel/ROI spectrum.
+11. Run PCA.
+12. Try NDVI/NDWI/NDMI when the required wavelengths are covered.
 
-## How to Test with EnMAP
+For very large BSQ files, local-folder mode is preferred over browser upload.
 
-1. Download an EnMAP L2A sample/product.
-2. Extract the product folder locally.
-3. Start the Streamlit application.
-4. Select **Local folder/path**.
-5. Paste the complete EnMAP L2A folder path.
-6. In Raster, choose the file ending with `SPECTRAL_IMAGE.BSQ`.
-7. Do not select `QL_PIXELMASK` or `QL_QUALITY` files for the main spectral analysis.
-8. Open Dataset Inspector.
-9. Confirm the hyperspectral band count and wavelength information.
-10. Use Band Viewer.
-11. Use Spectrum & PCA.
-12. Select a pixel and plot its spectral signature.
-13. Run PCA.
-14. Use RGB / False Color or spectral indices where appropriate.
+## Large data guidance
 
-## Understanding the Workflow
+Do not commit satellite imagery into GitHub.
 
-```text
-Satellite Product
-    ↓
-Product / File Identification
-    ↓
-Raster + Metadata Reading
-    ↓
-Band / Wavelength Inspection
-    ↓
-Band Visualization
-    ↓
-RGB / False Color
-    ↓
-Spectral Signature
-    ↓
-PCA / Spectral Indices
-    ↓
-Future Classification / Target Analysis
-```
-
-## Scientific Limitations
-
-This tool must not blindly apply radiometric, atmospheric, or geometric correction.
-
-Correct processing depends on:
-
-- sensor
-- product level
-- calibration coefficients
-- acquisition geometry
-- solar geometry
-- atmospheric parameters
-- quality masks
-- spectral response information
-
-For scientific work, users should verify whether source products are radiance, TOA reflectance, or surface reflectance before interpreting results.
-
-Do not assume scientific calibration unless the relevant processing chain is implemented and validated.
-
-## Roadmap
-
-- automatic EnMAP `METADATA.XML` parsing
-- automatic L1B/L1C/L2A recognition
-- automatic science-image vs quality-mask classification
-- VNIR + SWIR handling
-- wavelength-based band selection
-- natural-color preset
-- vegetation false-color preset
-- SWIR presets
-- NDVI
-- NDWI
-- red-edge indices
-- automatic quality masking
-- region-of-interest spectral averaging
-- pixel-to-pixel spectral comparison
-- spectral library comparison
-- classification
-- material / mineral analysis
-- processed GeoTIFF export
-- CSV spectral export
-- Sentinel-2-specific adapter
-- Landsat-specific adapter
-
-## Project Structure
-
-Current repository structure (core files):
-
-- `app.py` — Streamlit user interface and workflow orchestration.
-- `requirements.txt` — Python dependency list.
-- `satproc/io.py` — raster input/loading utilities and related I/O helpers.
-- `satproc/processing.py` — processing and analytics utilities (e.g., indices, PCA-related helpers).
-- `satproc/corrections.py` — correction-framework utilities/placeholders for sensor-aware workflows.
-- `DOWNLOAD_DATA.md` — additional notes on obtaining remote-sensing datasets.
-
-## Large Data Files
-
-Do not commit raw satellite imagery into GitHub.
-
-Files such as:
+The repository ignores common large raster formats such as:
 
 - `*.bsq`
 - `*.bil`
@@ -298,11 +305,53 @@ Files such as:
 - `*.tiff`
 - `*.jp2`
 
-should remain local or be downloaded from official satellite archives.
+It also ignores common local data folders:
 
-Confirmed: `.gitignore` excludes these file patterns.
+- `data/`
+- `datasets/`
+- `temp/`
 
-## Technology Stack
+## Project structure
+
+```text
+app.py
+satproc/
+  __init__.py
+  io.py
+  metadata.py
+  processing.py
+  indices.py
+  corrections.py
+  sensors/
+    __init__.py
+    base.py
+    enmap.py
+    sentinel2.py
+    landsat.py
+tests/
+  test_metadata.py
+  test_indices.py
+requirements.txt
+README.md
+.gitignore
+```
+
+## Testing
+
+Run:
+
+```bash
+python -m compileall .
+pytest -q
+```
+
+Then launch:
+
+```bash
+streamlit run app.py
+```
+
+## Technology stack
 
 - Python
 - Streamlit
@@ -312,13 +361,28 @@ Confirmed: `.gitignore` excludes these file patterns.
 - Matplotlib
 - scikit-learn
 - Pillow
+- pytest
 
-## License
+## Roadmap
 
-MIT License (see `LICENSE`).
+Next priorities include:
 
-## Contribution / Development Status
+- richer EnMAP `METADATA.XML` parsing
+- FWHM extraction
+- automatic quality-mask application
+- stronger Sentinel-2 product adapters
+- stronger Landsat product adapters
+- VNIR + SWIR product-aware workflows
+- interactive map/ROI selection
+- spectral-library comparison
+- classification
+- material/mineral workflows
+- GeoTIFF export
+- richer CSV/export metadata
+- profiling/performance diagnostics
+
+## Development status
 
 This project is under active development.
 
-Issues and pull requests are welcome. Please note that this repository is not positioned as production-ready scientific processing software yet.
+Issues and pull requests are welcome, but the repository should not yet be treated as production-certified scientific processing software.
